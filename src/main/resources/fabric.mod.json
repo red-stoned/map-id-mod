@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "showmapid",
+	"version": "${version}",
+	"name": "ShowMapID",
+	"description": "Displays map id next to map name",
+	"authors": [
+		"Galiano"
+	],
+	"contact": {
+		"homepage": "https://holebois.com",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/showmapid/icon.png",
+	"environment": "*",
+	"mixins": [
+		{
+			"config": "showmapid.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
