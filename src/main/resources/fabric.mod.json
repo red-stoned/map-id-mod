@@ -3,7 +3,7 @@
 	"id": "showmapid",
 	"version": "${version}",
 	"name": "ShowMapID",
-	"description": "Displays map id next to map name",
+	"description": "Displays map id next to map name when sneaking",
 	"authors": [
 		"Galiano"
 	],
