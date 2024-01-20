@@ -1,7 +1,6 @@
 package com.holebois.showmapid.mixin.client;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -31,6 +30,8 @@ extends EntityRenderer<T> {
 		if (!itemFrameEntity.getHeldItemStack().hasCustomName()) {
 			if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
 				return true;
+			} else {
+				return false;
 			}
 		}
 
