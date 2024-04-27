@@ -2,6 +2,7 @@ package com.holebois.showmapid.mixin.client;
 
 import net.minecraft.client.MinecraftClient;
 
+import net.minecraft.component.DataComponentTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -22,12 +23,16 @@ extends EntityRenderer<T> {
 		super(ctx);
 	}
 
+	/**
+	 * @author
+	 * @reason
+	 */
 	@Overwrite
     public boolean hasLabel(T itemFrameEntity) {
         if (!MinecraftClient.isHudEnabled() || itemFrameEntity.getHeldItemStack().isEmpty() || this.dispatcher.targetedEntity != itemFrameEntity) {
             return false;
         }
-		if (!itemFrameEntity.getHeldItemStack().hasCustomName()) {
+		if (!itemFrameEntity.getHeldItemStack().contains(DataComponentTypes.CUSTOM_NAME)) {
 			if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
 				return true;
 			} else {
@@ -40,16 +45,20 @@ extends EntityRenderer<T> {
         return d < (double)(f * f);
     }
 
+	/**
+	 * @author
+	 * @reason
+	 */
 	@Overwrite
-	public void renderLabelIfPresent(T itemFrameEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
+	public void renderLabelIfPresent(T itemFrameEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f) {
 		text = itemFrameEntity.getHeldItemStack().getName();
 		if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
-			int mapid = itemFrameEntity.getMapId().getAsInt();
+			int mapid = itemFrameEntity.getMapId().id();
 			text = text.copy().append(" <ID:" + mapid + ">");
 		}
 		if (text.getString().equals("Map")) {
 			return;
 		}
-		super.renderLabelIfPresent(itemFrameEntity, text, matrixStack, vertexConsumerProvider, i);
+		super.renderLabelIfPresent(itemFrameEntity, text, matrixStack, vertexConsumerProvider, i, f);
 	}
 }
