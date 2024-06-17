@@ -3,6 +3,7 @@ package com.holebois.showmapid.mixin.client;
 import net.minecraft.client.MinecraftClient;
 
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -51,9 +52,10 @@ extends EntityRenderer<T> {
 	 */
 	@Overwrite
 	public void renderLabelIfPresent(T itemFrameEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f) {
-		text = itemFrameEntity.getHeldItemStack().getName();
+		ItemStack itemstack = itemFrameEntity.getHeldItemStack();
+		text = itemstack.getName();
 		if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
-			int mapid = itemFrameEntity.getMapId().id();
+			int mapid = itemFrameEntity.getMapId(itemstack).id();
 			text = text.copy().append(" <ID:" + mapid + ">");
 		}
 		if (text.getString().equals("Map")) {
