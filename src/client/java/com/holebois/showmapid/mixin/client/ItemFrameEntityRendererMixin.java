@@ -3,6 +3,7 @@ package com.holebois.showmapid.mixin.client;
 import net.minecraft.client.MinecraftClient;
 
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -16,6 +17,7 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.text.Text;
 
 
+@SuppressWarnings({"ReassignedVariable", "OverwriteAuthorRequired"})
 @Mixin(ItemFrameEntityRenderer.class)
 public abstract class ItemFrameEntityRendererMixin<T extends ItemFrameEntity>
 extends EntityRenderer<T> {
@@ -23,10 +25,6 @@ extends EntityRenderer<T> {
 		super(ctx);
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Overwrite
     public boolean hasLabel(T itemFrameEntity) {
         if (!MinecraftClient.isHudEnabled() || itemFrameEntity.getHeldItemStack().isEmpty() || this.dispatcher.targetedEntity != itemFrameEntity) {
@@ -45,15 +43,12 @@ extends EntityRenderer<T> {
         return d < (double)(f * f);
     }
 
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Overwrite
 	public void renderLabelIfPresent(T itemFrameEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f) {
-		text = itemFrameEntity.getHeldItemStack().getName();
+		ItemStack itemstack = itemFrameEntity.getHeldItemStack();
+		text = itemstack.getName();
 		if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
-			int mapid = itemFrameEntity.getMapId().id();
+			int mapid = itemFrameEntity.getMapId(itemstack).id();
 			text = text.copy().append(" <ID:" + mapid + ">");
 		}
 		if (text.getString().equals("Map")) {
