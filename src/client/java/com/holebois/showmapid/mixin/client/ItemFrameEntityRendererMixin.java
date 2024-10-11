@@ -5,14 +5,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ItemFrameEntityRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.render.entity.state.ItemFrameEntityRenderState;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.text.Text;
 
@@ -20,40 +20,19 @@ import net.minecraft.text.Text;
 @SuppressWarnings({"ReassignedVariable", "OverwriteAuthorRequired"})
 @Mixin(ItemFrameEntityRenderer.class)
 public abstract class ItemFrameEntityRendererMixin<T extends ItemFrameEntity>
-extends EntityRenderer<T> {
+extends EntityRenderer<T, ItemFrameEntityRenderState> {
 	protected ItemFrameEntityRendererMixin(EntityRendererFactory.Context ctx) {
 		super(ctx);
 	}
 
-	@Overwrite
-    public boolean hasLabel(T itemFrameEntity) {
-        if (!MinecraftClient.isHudEnabled() || itemFrameEntity.getHeldItemStack().isEmpty() || this.dispatcher.targetedEntity != itemFrameEntity) {
-            return false;
-        }
-		if (!itemFrameEntity.getHeldItemStack().contains(DataComponentTypes.CUSTOM_NAME)) {
-			if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
-				return true;
-			} else {
-				return false;
-			}
+	@Inject(at = @At("TAIL"), method = "updateRenderState")
+	public void updateRenderState(T itemFrameEntity, ItemFrameEntityRenderState itemFrameEntityRenderState, float f, CallbackInfo ci) {
+        ItemStack itemstack = itemFrameEntityRenderState.contents;
+        
+		if (this.dispatcher.targetedEntity == itemFrameEntity && itemstack.contains(DataComponentTypes.MAP_ID) && MinecraftClient.getInstance().player.isSneaking()) {
+            Text text = itemstack.getName();
+			int mapid = itemFrameEntityRenderState.mapId.id();
+			itemFrameEntityRenderState.displayName = text.copy().append(" <ID:" + mapid + ">");
 		}
-
-        double d = this.dispatcher.getSquaredDistanceToCamera((Entity)itemFrameEntity);
-        float f = itemFrameEntity.isSneaky() ? 32.0f : 64.0f;
-        return d < (double)(f * f);
-    }
-
-	@Overwrite
-	public void renderLabelIfPresent(T itemFrameEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f) {
-		ItemStack itemstack = itemFrameEntity.getHeldItemStack();
-		text = itemstack.getName();
-		if (itemFrameEntity.containsMap() && MinecraftClient.getInstance().player.isSneaking()) {
-			int mapid = itemFrameEntity.getMapId(itemstack).id();
-			text = text.copy().append(" <ID:" + mapid + ">");
-		}
-		if (text.getString().equals("Map")) {
-			return;
-		}
-		super.renderLabelIfPresent(itemFrameEntity, text, matrixStack, vertexConsumerProvider, i, f);
 	}
 }
