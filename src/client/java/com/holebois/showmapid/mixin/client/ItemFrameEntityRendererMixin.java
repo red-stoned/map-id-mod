@@ -5,9 +5,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -25,14 +28,23 @@ extends EntityRenderer<T, ItemFrameEntityRenderState> {
 		super(ctx);
 	}
 
-	@Inject(at = @At("TAIL"), method = "updateRenderState")
-	public void updateRenderState(T itemFrameEntity, ItemFrameEntityRenderState itemFrameEntityRenderState, float f, CallbackInfo ci) {
-        ItemStack itemstack = itemFrameEntityRenderState.contents;
-        
-		if (this.dispatcher.targetedEntity == itemFrameEntity && itemstack.contains(DataComponentTypes.MAP_ID) && MinecraftClient.getInstance().player.isSneaking()) {
-            Text text = itemstack.getName();
-			int mapid = itemFrameEntityRenderState.mapId.id();
-			itemFrameEntityRenderState.displayName = text.copy().append(" <ID:" + mapid + ">");
-		}
-	}
+    @Inject(at = @At("HEAD"), method = "hasLabel", cancellable = true)
+    public void label(T itemFrameEntity, double d, CallbackInfoReturnable<Boolean> cir) {
+        Boolean show =  MinecraftClient.isHudEnabled() && 
+            !itemFrameEntity.getHeldItemStack().isEmpty() && 
+            this.dispatcher.targetedEntity == itemFrameEntity &&
+            (
+                itemFrameEntity.getHeldItemStack().contains(DataComponentTypes.CUSTOM_NAME) ||
+                (
+                    itemFrameEntity.getHeldItemStack().contains(DataComponentTypes.MAP_ID) &&
+                    MinecraftClient.getInstance().player.isSneaking()
+                )
+            ); 
+        cir.setReturnValue(show);
+    }
+
+    @Inject(at = @At("HEAD"), method = "getDisplayName", cancellable = true)
+    public void name(T itemFrameEntity, CallbackInfoReturnable<Text> cir) {
+        cir.setReturnValue(itemFrameEntity.getHeldItemStack().getName().copy().append(" <ID:" + itemFrameEntity.getHeldItemStack().get(DataComponentTypes.MAP_ID).id() + ">"));
+     }
 }
