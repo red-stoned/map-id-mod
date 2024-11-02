@@ -45,6 +45,8 @@ extends EntityRenderer<T, ItemFrameEntityRenderState> {
 
     @Inject(at = @At("HEAD"), method = "getDisplayName", cancellable = true)
     public void name(T itemFrameEntity, CallbackInfoReturnable<Text> cir) {
-        cir.setReturnValue(itemFrameEntity.getHeldItemStack().getName().copy().append(" <ID:" + itemFrameEntity.getHeldItemStack().get(DataComponentTypes.MAP_ID).id() + ">"));
+        if (itemFrameEntity.getHeldItemStack().contains(DataComponentTypes.MAP_ID) && MinecraftClient.getInstance().player.isSneaking()) {
+            cir.setReturnValue(itemFrameEntity.getHeldItemStack().getName().copy().append(" <ID:" + itemFrameEntity.getHeldItemStack().get(DataComponentTypes.MAP_ID).id() + ">"));
+        }
      }
 }
