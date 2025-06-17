@@ -16,7 +16,6 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.text.Text;
 
 
-@SuppressWarnings({"ReassignedVariable", "OverwriteAuthorRequired"})
 @Mixin(ItemFrameEntityRenderer.class)
 public abstract class ItemFrameEntityRendererMixin<T extends ItemFrameEntity>
 extends EntityRenderer<T, ItemFrameEntityRenderState> {
