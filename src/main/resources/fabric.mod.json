@@ -8,8 +8,9 @@
 		"Galiano"
 	],
 	"contact": {
-		"homepage": "https://holebois.com",
-		"sources": "https://github.com/holebois/map-id-mod/issues"
+		"homepage": "https://redstoned.dev",
+		"sources": "https://github.com/red-stoned/map-id-mod",
+		"issues": "https://github.com/red-stoned/map-id-mod/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/showmapid/icon.png",
@@ -22,8 +23,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.21.11",
-		"java": ">=21",
+		"minecraft": "~26.1",
 		"fabric-api": "*"
 	}
 }
