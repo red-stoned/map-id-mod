@@ -1,5 +1,10 @@
 package com.holebois.showmapid.mixin.client;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -9,9 +14,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 
 @Mixin(ItemFrameRenderer.class)
@@ -21,25 +25,26 @@ extends EntityRenderer<T, ItemFrameRenderState> {
 		super(ctx);
 	}
 
-    @Inject(at = @At("HEAD"), method = "shouldShowName", cancellable = true)
-    public void label(T itemFrameEntity, double d, CallbackInfoReturnable<Boolean> cir) {
-        Boolean show =  Minecraft.renderNames() && 
-            !itemFrameEntity.getItem().isEmpty() && 
-            this.entityRenderDispatcher.crosshairPickEntity == itemFrameEntity &&
-            (
-                itemFrameEntity.getItem().has(DataComponents.CUSTOM_NAME) ||
-                (
-                    itemFrameEntity.getItem().has(DataComponents.MAP_ID) &&
-                    Minecraft.getInstance().player.isShiftKeyDown()
-                )
-            ); 
-        cir.setReturnValue(show);
+    @Unique
+    private boolean showmapid$shouldShowMapId(T entity) {
+        return entity.getItem().has(DataComponents.MAP_ID) && Minecraft.getInstance().player.isShiftKeyDown();
     }
 
-    @Inject(at = @At("HEAD"), method = "getNameTag", cancellable = true)
-    public void name(T itemFrameEntity, CallbackInfoReturnable<Component> cir) {
-        if (itemFrameEntity.getItem().has(DataComponents.MAP_ID) && Minecraft.getInstance().player.isShiftKeyDown()) {
-            cir.setReturnValue(itemFrameEntity.getItem().getHoverName().copy().append(" <ID:" + itemFrameEntity.getItem().get(DataComponents.MAP_ID).id() + ">"));
+    @Definition(id = "entity", local = @Local(type = ItemFrame.class))
+    @Definition(id = "getItem", method = "Lnet/minecraft/world/entity/decoration/ItemFrame;getItem()Lnet/minecraft/world/item/ItemStack;")
+    @Definition(id = "getCustomName", method = "Lnet/minecraft/world/item/ItemStack;getCustomName()Lnet/minecraft/network/chat/Component;")
+    @Expression("entity.getItem().getCustomName() != null")
+    @ModifyExpressionValue(method = "shouldShowName(Lnet/minecraft/world/entity/decoration/ItemFrame;D)Z", at = @At("MIXINEXTRAS:EXPRESSION"))
+    public boolean showIfSneakingMap(boolean original, @Local(argsOnly = true) T entity) {
+        return original || showmapid$shouldShowMapId(entity);
+    }
+
+    @ModifyReturnValue(method = "getNameTag(Lnet/minecraft/world/entity/decoration/ItemFrame;)Lnet/minecraft/network/chat/Component;", at = @At("RETURN"))
+    public Component addMapIdToNametag(Component original, @Local(argsOnly = true) T entity) {
+        if (showmapid$shouldShowMapId(entity)) {
+            return original.copy().append(" <ID:" + entity.getItem().get(DataComponents.MAP_ID).id() + ">");
+        } else {
+            return original;
         }
-     }
+    }
 }
